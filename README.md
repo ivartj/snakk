@@ -1,4 +1,5 @@
-BASIC IDEA
+Basic Idea
+==========
 
 The main goal is to create a versatile platform for a variety of
 decentralized social media, independent of a central authority for
@@ -6,20 +7,21 @@ operation, administration or moderation of the network. Individual
 users should be empowered with the ability to extend the platform in
 order to shape their online community.
 
-The idea is create software for query and peering of digitally signed
+The idea is to create software for query and peering of digitally signed
 'messages', that may be used in a variety of applications. If they
 form a forum, a message may represent a post, a reply, a revision, a
 tagging, a "Like", or perhaps a "Dislike". Moderation can be a
 collaborative process through a network of trust.
 
 
-SNAKK MESSAGE FORMAT
+## Snakk Message Format
 
 The format starts out in the style of NNTP/HTTP/SMTP/etc headers. The
 standardized headers `Signature`, `Watermark` and `Identity` must
 always come before the other headers, in that order. The `Signature`
-and `Identity` headers are mandatory, while the `Watermark` header
-is not. Other headers may be used for application-specific purposes.
+and `Identity` headers are mandatory, while the `Watermark` header is
+not. Other headers the body of the message may be used for
+application-specific purposes.
 
 Messages are identified by their content below the Watermark field, or
 Signature field if it is not present, typically represented by hash value.
@@ -45,5 +47,8 @@ For example, if a message is authenticated by a GPG public key
     Signature: d7a8fbb307d7809469c
     Watermark: 127890340891
     Identity: gpg-public-key e4f8d5651e46d3cdb762d02d0bf37c9e592
+    Content-Type: text/plain
+    
+    Hello.
 
 (these aren't actual GPG public keys and signatures)
