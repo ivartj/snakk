@@ -52,3 +52,21 @@ For example, if a message is authenticated by a GPG public key
     Hello.
 
 (these aren't actual GPG public keys and signatures)
+
+
+## TODO / Plan
+
+ * Message format specification
+ * Example message files conforming to the specification
+ * CLI user tools
+    * Message parser, printer and manipulation API
+    * GPG signatures and verifcation
+ * Web message pool
+    * Capability to receive messages and maybe also authenticate GPG signatures
+    * Allow for query of messages with the following minimum querying
+      capabilities:
+       * Query latest messages
+       * Query messages by a hash value
+       * Query messages from identity
+       * Query messages in which the Reply-To header has a specified value
+       * Query messages with a given word in the Tags header
