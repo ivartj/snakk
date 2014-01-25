@@ -20,12 +20,12 @@ The format starts out in the style of NNTP/HTTP/SMTP/etc headers. The
 standardized headers `Signature`, `Watermark` and `Identity` must
 always come before the other headers, in that order. The `Signature`
 and `Identity` headers are mandatory, while the `Watermark` header is
-not. Other headers the body of the message may be used for
+not. Other headers and the body of the message may be used for
 application-specific purposes.
 
 Messages are identified by their content below the Watermark field, or
-Signature field if it is not present, typically represented by hash value.
-A message ID is in the form of
+Signature field if it is not present, typically represented by hash
+value.  A message ID is in the form of
 
     scheme ":" parameter
 
@@ -53,6 +53,26 @@ For example, if a message is authenticated by a GPG public key
 
 (these aren't actual GPG public keys and signatures)
 
+
+## Command-Line Interface
+
+    snakk verify <message-file>
+
+Checks whether there is a digital signature in the message that can be
+verified.
+
+    snakk sign <unsigned-message-file>
+
+Prepend digital signature to file which may include headers.
+
+    snakk publish <message-file>
+
+Publish message file to configured message pools.
+Signs message if it is not done.
+
+    snakk extract <message-file> [ -o <output-file> ]
+
+Removes signature and headers and outputs the contained content.
 
 ## TODO / Plan
 
