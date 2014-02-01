@@ -1,21 +1,88 @@
+#include "parser.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include "msg.h"
+#include <getopt.h>
+#include <string.h>
+#include <errno.h>
 
-int main(int argc, char *argv[])
+char *filename = NULL;
+FILE *file = NULL;
+
+void usage(FILE *out)
 {
-	snakk_msg *m;
-	int i;
+	fprintf(out, "usage: snakk <file>\n");
+}
 
-	m = snakk_msg_open("test.txt");
-	if(m == NULL) {
-		fprintf(stderr, "snakk_msg_open: %s\n", snakk_error());
+void parseargs(int argc, char *argv[])
+{
+	int c;
+	static struct option longopts[] = {
+		{ "help", no_argument, NULL, 'h' },
+		{ 0, 0, 0, 0 },
+	};
+
+	while((c = getopt_long(argc, argv, "h", longopts, NULL)) != -1)
+	switch(c) {
+	case 'h':
+		usage(stdout);
+		exit(EXIT_SUCCESS);
+	case '?':
+		usage(stderr);
 		exit(EXIT_FAILURE);
 	}
 
-	for(i = 0; i < snakk_msg_header_get_length(m); i++)
-		printf("[%s|%s]\n", snakk_msg_header_by_idx_get_name(m, i), snakk_msg_header_by_idx_get_content(m, i));
-	snakk_msg_body_print(m, (snakk_msg_writefn)fwrite, stdout);
+	switch(argc - optind) {
+	case 1:
+		filename = argv[optind];
+		break;
+	default:
+		usage(stderr);
+		exit(EXIT_FAILURE);
+	}
+}
+
+void openfile(void)
+{
+	file = fopen(filename, "rb");
+	if(file == NULL) {
+		fprintf(stderr, "Failed to open file: %s\n", strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+}
+
+int main(int argc, char *argv[])
+{
+	msg *m;
+	header *hd;
+	field *f;
+	parser p;
+	int i, j;
+
+	parseargs(argc, argv);
+	openfile();
+
+	parser_init(&p, (parser_readfn)fread, file);
+	m = parse_msg(&p);
+	if(m == NULL) {
+		fprintf(stderr, "ERROR: %s.\n", p.errmsg);
+		exit(EXIT_FAILURE);
+	}
+
+	for(i = 0; i < msg_get_sig_num(m); i++) {
+		hd = msg_get_sig_i(m, i);
+		printf("sig by %s\n\t%s\n\n",
+			header_get(hd, "Identity"),
+			header_get(hd, "Signature"));
+	}
+
+	hd = msg_get_header(m);
+
+	for(i = 0; i < header_get_field_num(hd); i++) {
+		f = header_get_field_i(hd, i);
+		printf("{%s|%s}\n", field_get_name(f), field_get_value(f));
+	}
+
+	printf("%s", msg_get_body(m));
 
 	exit(EXIT_SUCCESS);
 }
