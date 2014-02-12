@@ -1,0 +1,17 @@
+Suggested commands:
+
+
+    snakk extract <file> [ -o <output-file> ]
+
+Extracts the body of the message file.
+
+
+    snakk header <file> [ -o <output-file> ] [ -f bash | --format=bash ]
+
+Extracts the header of the message file, optionally in a format
+accessible to bash scripts.
+
+
+    snakk envelope <file> [ -o <output-file> ] [ -i <header-file> ]
+
+Prepends headers to the file.

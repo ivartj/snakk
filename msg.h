@@ -13,13 +13,14 @@ typedef struct _field field;
 
 msg *msg_create(void);
 void msg_set_header(msg *m, header *hd);
+void msg_set_src(msg *m, char *src);
+void msg_set_src_n(msg *m, char *src, size_t srclen);
 void msg_set_body(msg *m, char *body);
 void msg_set_body_n(msg *m, char *body, size_t bodylen);
-void msg_add_sig(msg *m, header *hd);
 
-int msg_get_sig_num(msg *m);
-header *msg_get_sig_i(msg *m, int idx);
 header *msg_get_header(msg *m);
+char *msg_get_src(msg *m);
+char *msg_get_src_n(msg *m, size_t *rlen);
 char *msg_get_body(msg *m);
 char *msg_get_body_n(msg *m, size_t *rlen);
 

@@ -143,6 +143,8 @@ char *parse_full_n(parser *x, size_t *rlen)
 
 	while(xread(x, buf, sizeof(buf)) == sizeof(buf)); 
 
+	*rlen = xget(x) - start;
+
 	return xcpy(x, start, xget(x) - 1);
 }
 
@@ -272,10 +274,22 @@ field *parse_field(parser *x)
 
 	start = xget(x);
 
-	if(parse_field_name(x, &name, &namelen))
-	if(parse_text(x, ":"))
-	if(parse_field_value(x, &value, &valuelen))
+	if(!parse_field_name(x, &name, &namelen)) {
+		xerr(x, "Failed to parse field name");
+		goto abort;
+	}
+
+	if(!parse_text(x, ":")) {
+		xerr(x, "Unexpected character in field name.");
+		goto abort;
+	}
+
+	if(!parse_field_value(x, &value, &valuelen)) {
+		xerr(x, "Failed to parse field value.");
+		goto abort;
+	} else
 		goto ret;
+
 abort:
 	if(name != NULL)
 		free(name);
@@ -524,16 +538,17 @@ msg *parse_msg(parser *x)
 	m = msg_create();
 	start = xget(x);
 
-	while((hd = parse_msg_sig(x)) != NULL)
-		msg_add_sig(m, hd);
-
-	if((hd = parse_msg_header(x)) == NULL)
+	if((hd = parse_header(x)) == NULL) {
+		xerr(x, "Failed to parse header: %s", x->errmsg);
 		goto abort;
+	}
 
 	msg_set_header(m, hd);
 
-	if((body = parse_full_n(x, &bodylen)) == NULL)
+	if((body = parse_full_n(x, &bodylen)) == NULL) {
+		xerr(x, "Failed to parse message body.");
 		goto abort;
+	}
 
 	msg_set_body_n(m, body, bodylen);
 
@@ -544,65 +559,6 @@ abort:
 	xset(x, start);
 	return NULL;
 ret:
+	msg_set_src_n(m, xcpy(x, start, xget(x) - 1), xget(x) - start);
 	return m;
-}
-
-header *parse_msg_sig(parser *x)
-{
-	header *hd = NULL;
-	size_t start;
-
-	start = xget(x);
-
-	if(!parse_text(x, "SIG")) {
-		xerr(x, "Expected SIG");
-		goto abort;
-	}
-
-	if(!parse_linebreak(x)) {
-		xerr(x, "Expected line break after SIG");
-		goto abort;
-	}
-
-	if((hd = parse_header(x)) != NULL)
-		goto ret;
-
-abort:
-	if(hd != NULL)
-		header_destroy(hd);
-	xset(x, start);
-	return NULL;
-ret:
-	return hd;
-
-}
-
-header *parse_msg_header(parser *x)
-{
-	header *hd = NULL;
-	size_t start;
-
-	start = xget(x);
-
-	if(!parse_text(x, "MSG")) {
-		xerr(x, "Expected MSG");
-		goto abort;
-	}
-
-	if(!parse_linebreak(x)) {
-		xerr(x, "Expected line break after MSG");
-		goto abort;
-	}
-
-	if((hd = parse_header(x)) != NULL)
-		goto ret;
-
-abort:
-	if(hd != NULL)
-		header_destroy(hd);
-	xset(x, start);
-	return NULL;
-ret:
-	return hd;
-
 }

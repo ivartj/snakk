@@ -3,9 +3,9 @@
 #include <string.h>
 
 struct _msg {
+	char *src;
+	size_t srclen;
 	header *hd;
-	header **sigv;
-	int sigc;
 	char *body;
 	size_t bodylen;
 };
@@ -35,6 +35,18 @@ void msg_set_header(msg *m, header *hd)
 	m->hd = hd;
 }
 
+void msg_set_src(msg *m, char *src)
+{
+	m->src = src;
+	m->srclen = strlen(src);
+}
+
+void msg_set_src_n(msg *m, char *src, size_t srclen)
+{
+	m->src = src;
+	m->srclen = srclen;
+}
+
 void msg_set_body(msg *m, char *body)
 {
 	m->body = body;
@@ -45,30 +57,24 @@ void msg_set_body_n(msg *m, char *body, size_t bodylen)
 {
 	m->body = body;
 	m->bodylen = bodylen;
-}
 
-void msg_add_sig(msg *m, header *hd)
-{
-	m->sigc++;
-	m->sigv = realloc(m->sigv, sizeof(header *) * m->sigc);
-	m->sigv[m->sigc - 1] = hd;
-}
-
-int msg_get_sig_num(msg *m)
-{
-	return m->sigc;
-}
-
-header *msg_get_sig_i(msg *m, int idx)
-{
-	if(idx >= m->sigc)
-		return NULL;
-	return m->sigv[idx];
 }
 
 header *msg_get_header(msg *m)
 {
 	return m->hd;
+}
+
+char *msg_get_src(msg *m)
+{
+	return m->src;
+}
+
+char *msg_get_src_n(msg *m, size_t *rlen)
+{
+	if(rlen != NULL)
+		*rlen = m->srclen;
+	return m->src;
 }
 
 char *msg_get_body(msg *m)
@@ -89,14 +95,6 @@ void msg_destroy(msg *m)
 
 	if(m->hd != NULL)
 		header_destroy(m->hd);
-
-	if(m->sigc != 0) {
-
-		for(i = 0; i < m->sigc; i++)
-			header_destroy(m->sigv[i]);
-
-		free(m->sigv);
-	}
 
 	if(m->body != NULL)
 		free(m->body);
