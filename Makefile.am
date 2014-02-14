@@ -1,5 +1,6 @@
-AM_CFLAGS = $(GPGME_CFLAGS)
-LDADD = $(GPGME_LIBS)
-
 bin_PROGRAMS = snakk
-snakk_SOURCES = main.c parser.h parser.c msg.h msg.c main-extract.c main-extract.h printer.h printer.c
+snakk_SOURCES = main.c
+snakk_SOURCES += parser.c msg.c printer.c
+snakk_SOURCES += parser.h msg.h printer.h
+snakk_SOURCES += main-extract.c main-envelope.c main-header.c
+snakk_SOURCES += main-extract.h main-envelope.h main-header.h

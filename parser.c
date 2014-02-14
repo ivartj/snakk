@@ -12,6 +12,13 @@ void parser_init(parser *p, parser_readfn readfn, void *rdata)
 	p->rdata = rdata;
 }
 
+void parser_reset(parser *p)
+{
+	if(p->src)
+		free(p->src);
+	memset(p, 0, sizeof(parser));
+}
+
 size_t xread(parser *x, void *data, size_t len)
 {
 	size_t dec, off;
@@ -83,7 +90,7 @@ void xadd(parser *x, void *data, size_t len)
 	x->srcoff = x->srclen += len;
 }
 
-void *xcpy(parser *x, size_t start, size_t stop)
+char *xcpy(parser *x, size_t start, size_t stop)
 {
 	size_t len;
 	void *cpy;
@@ -145,7 +152,7 @@ char *parse_full_n(parser *x, size_t *rlen)
 
 	*rlen = xget(x) - start;
 
-	return xcpy(x, start, xget(x) - 1);
+	return xcpy(x, start, xget(x));
 }
 
 int parse_linebreak(parser *x)
@@ -285,7 +292,7 @@ field *parse_field(parser *x)
 	}
 
 	if(!parse_field_value(x, &value, &valuelen)) {
-		xerr(x, "Failed to parse field value.");
+		xerr(x, "Failed to parse field value");
 		goto abort;
 	} else
 		goto ret;
@@ -301,6 +308,7 @@ ret:
 	fld = field_create();
 	field_set_name_n(fld, name, namelen);
 	field_set_value_n(fld, value, valuelen);
+	field_set_src_on(fld, x->src, start, xget(x));
 
 	return fld;
 }
@@ -509,14 +517,14 @@ header *parse_header(parser *x)
 
 	while((f = parse_field(x)) != NULL)
 		header_add_field(hd, f);
-	if(parse_linebreak(x))
-		goto ret;
+	goto ret;
 
 abort:
 	header_destroy(hd);
 	xset(x, start);
 	return NULL;
 ret:
+	header_set_src_on(hd, x->src, start, xget(x));
 	return hd;
 }
 
@@ -545,6 +553,11 @@ msg *parse_msg(parser *x)
 
 	msg_set_header(m, hd);
 
+	if(!parse_linebreak(x)) {
+		xerr(x, "No expected line break after header");
+		goto abort;
+	}
+
 	if((body = parse_full_n(x, &bodylen)) == NULL) {
 		xerr(x, "Failed to parse message body.");
 		goto abort;
@@ -559,6 +572,6 @@ abort:
 	xset(x, start);
 	return NULL;
 ret:
-	msg_set_src_n(m, xcpy(x, start, xget(x) - 1), xget(x) - start);
+	msg_set_src_on(m, x->src, start, xget(x));
 	return m;
 }

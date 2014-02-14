@@ -4,10 +4,13 @@
 #include <getopt.h>
 #include "main-extract.h"
 #include "main-envelope.h"
+#include "main-header.h"
 
 static void parseargs(int argc, char *argv[]);
 static void usage(FILE *out);
 static void version(FILE *out);
+static int help_main(int argc, char *argv[]);
+static int version_main(int argc, char *argv[]);
 
 struct command {
 	char *name;
@@ -15,8 +18,11 @@ struct command {
 };
 
 static struct command commands[] = {
+	{ "help", help_main },
+	{ "version", version_main },
 	{ "extract", extract_main },
 	{ "envelope", envelope_main },
+	{ "header", header_main },
 };
 
 void usage(FILE *out)
@@ -27,6 +33,18 @@ void usage(FILE *out)
 void version(FILE *out)
 {
 	puts("snakk version " PACKAGE_VERSION);
+}
+
+int help_main(int argc, char *argv[])
+{
+	usage(stdout);
+	exit(EXIT_SUCCESS);
+}
+
+int version_main(int argc, char *argv[])
+{
+	version(stdout);
+	exit(EXIT_SUCCESS);
 }
 
 void parseargs(int argc, char *argv[])

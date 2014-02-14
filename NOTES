@@ -6,10 +6,11 @@ Suggested commands:
 Extracts the body of the message file.
 
 
-    snakk header <file> [ -o <output-file> ] [ -f bash | --format=bash ]
+    snakk header <file>
+    	[ -o <output-file> ]
+    	[ -f | --format= { verbatim | fold | unfold | bash } ]
 
-Extracts the header of the message file, optionally in a format
-accessible to bash scripts.
+Extracts the header of the message file, verbatim by default.
 
 
     snakk envelope <file> [ -o <output-file> ] [ -i <header-file> ]

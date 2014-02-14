@@ -4,6 +4,7 @@
 
 struct _msg {
 	char *src;
+	size_t srcoff;
 	size_t srclen;
 	header *hd;
 	char *body;
@@ -11,11 +12,17 @@ struct _msg {
 };
 
 struct _header {
+	char *src;
+	size_t srcoff;
+	size_t srclen;
 	field **fieldv;
 	int fieldc;
 };
 
 struct _field {
+	char *src;
+	size_t srcoff;
+	size_t srclen;
 	char *name, *value;
 	size_t namelen, valuelen;
 };
@@ -35,16 +42,10 @@ void msg_set_header(msg *m, header *hd)
 	m->hd = hd;
 }
 
-void msg_set_src(msg *m, char *src)
+void msg_set_src_on(msg *m, char *src, size_t off, size_t stop)
 {
-	m->src = src;
-	m->srclen = strlen(src);
-}
-
-void msg_set_src_n(msg *m, char *src, size_t srclen)
-{
-	m->src = src;
-	m->srclen = srclen;
+	m->src = src + off;
+	m->srclen = stop - off;
 }
 
 void msg_set_body(msg *m, char *body)
@@ -57,7 +58,6 @@ void msg_set_body_n(msg *m, char *body, size_t bodylen)
 {
 	m->body = body;
 	m->bodylen = bodylen;
-
 }
 
 header *msg_get_header(msg *m)
@@ -111,6 +111,12 @@ header *header_create(void)
 	return calloc(1, sizeof(header));
 }
 
+void header_set_src_on(header *hd, char *src, size_t off, size_t stop)
+{
+	hd->src = src + off;
+	hd->srclen = stop - off;
+}
+
 void header_add_field(header *hd, field *f)
 {
 	hd->fieldc++;
@@ -118,7 +124,69 @@ void header_add_field(header *hd, field *f)
 	hd->fieldv[hd->fieldc - 1] = f;
 }
 
+void header_move_field(header *hd, int idx, int to)
+{
+	field *f;
+	int i;
+
+	f = hd->fieldv[idx];
+
+	for(i = idx; i > to; i--)
+		hd->fieldv[i] = hd->fieldv[i - 1];
+	for(i = idx; i < to; i++)
+		hd->fieldv[i] = hd->fieldv[i + 1];
+
+	hd->fieldv[to] = f;
+}
+
+void header_insert_field(header *hd, field *f, int idx)
+{
+	hd->fieldc++;
+	hd->fieldv = realloc(hd->fieldv, sizeof(field *) * hd->fieldc);
+	memmove(&(hd->fieldv[1 + idx]), &(hd->fieldv[idx]), sizeof(field *) * (hd->fieldc - 1 - idx));
+	hd->fieldv[idx] = f;
+}
+
+int header_get_index(header *hd, char *name)
+{
+	int i;
+	size_t namelen;
+
+	namelen = strlen(name);
+
+	for(i = 0; i < hd->fieldc; i++)
+		if(hd->fieldv[i]->namelen == namelen)
+		if(!strncmp(hd->fieldv[i]->name, name, namelen))
+			break;
+
+	if(i == hd->fieldc)
+		return -1;
+
+	return i;
+}
+
+void header_set_top_i(header *hd, int idx)
+{
+	field *f;
+	int i;
+
+	f = hd->fieldv[idx];
+
+	for(i = idx; i > 0; i--)
+		hd->fieldv[i] = hd->fieldv[i - 1];
+	hd->fieldv[0] = f;
+}
+
 char *header_get(header *hd, char *name)
+{
+	field *f;
+	f = header_get_field(hd, name);
+	if(f == NULL)
+		return NULL;
+	return f->value;
+}
+
+field *header_get_field(header *hd, char *name)
 {
 	int i;
 	size_t namelen;
@@ -133,7 +201,7 @@ char *header_get(header *hd, char *name)
 	if(i == hd->fieldc)
 		return NULL;
 
-	return hd->fieldv[i]->value;
+	return hd->fieldv[i];
 }
 
 char *header_get_n(header *hd, char *name, size_t namelen, size_t *rvaluelen)
@@ -187,6 +255,19 @@ field *field_create(void)
 {
 	return calloc(1, sizeof(field));
 }
+
+void field_set_src_on(field *fld, char *src, size_t off, size_t stop)
+{
+	fld->src = src + off;
+	fld->srclen = stop - off;
+}
+
+char *field_get_src_n(field *fld, size_t *rlen)
+{
+	*rlen = fld->srclen;
+	return fld->src;
+}
+
 
 void field_set_name(field *f, char *name)
 {

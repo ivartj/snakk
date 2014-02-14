@@ -20,12 +20,14 @@ struct _parser {
 };
 
 void parser_init(parser *p, parser_readfn readfn, void *rdata);
+void parser_reset(parser *p);
 
 size_t xread(parser *x, void *data, size_t len);
 int xgetc(parser *x);
 size_t xget(parser *x);
 void xset(parser *x, size_t off);
 void xadd(parser *x, void *data, size_t len);
+char *xcpy(parser *x, size_t start, size_t stop);
 
 typedef struct _buffer buffer;
 

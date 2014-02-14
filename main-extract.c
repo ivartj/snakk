@@ -9,7 +9,7 @@
 #include <errno.h>
 
 static void parseargs(int argc, char *argv[]);
-static void openfile(void);
+static void openfiles(void);
 static void usage(FILE *out);
 static void parse(void);
 static void extract(void);
@@ -60,7 +60,7 @@ void parseargs(int argc, char *argv[])
 	}
 }
 
-void openfile(void)
+void openfiles(void)
 {
 	if(filename != NULL) {
 		file = fopen(filename, "rb");
@@ -107,7 +107,7 @@ void extract(void)
 int extract_main(int argc, char *argv[])
 {
 	parseargs(argc, argv);
-	openfile();
+	openfiles();
 	parse();
 	extract();
 

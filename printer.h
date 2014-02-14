@@ -16,6 +16,8 @@ void printer_init(printer *x, printer_writefn writefn, void *wdata);
 
 size_t print_msg(printer *x, msg *m);
 size_t print_header(printer *x, header *hd);
+size_t print_field(printer *x, field *f);
 size_t print_chunk(printer *x, char *src, size_t len);
+int xprintf(printer *x, const char *fmt, ...);
 
 #endif
