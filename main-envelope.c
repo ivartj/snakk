@@ -9,7 +9,6 @@
 
 static void parseargs(int argc, char *argv[]);
 static void openfiles(void);
-static void usage(FILE *out);
 static void parse(void);
 static void print(void);
 
@@ -25,7 +24,7 @@ static enum {
 	format_unfolded,
 } format = format_verbatim;
 
-void usage(FILE *out)
+void envelope_usage(FILE *out)
 {
 	fprintf(out,
 	"snakk envelope <file1> <file2> ...\n"
@@ -48,7 +47,7 @@ void parseargs(int argc, char *argv[])
 	while((c = getopt_long(argc, argv, "ho:e:f:", longopts, NULL)) != -1)
 	switch(c) {
 	case 'h':
-		usage(stdout);
+		envelope_usage(stdout);
 		exit(EXIT_SUCCESS);
 	case 'o':
 		outfilename = optarg;
@@ -65,13 +64,13 @@ void parseargs(int argc, char *argv[])
 		fprintf(stderr, "Unrecognized format '%s'.\n", optarg);
 		exit(EXIT_FAILURE);
 	default:
-		usage(stderr);
+		envelope_usage(stderr);
 		exit(EXIT_FAILURE);
 	}
 
 	switch(argc - optind) {
 	case 0:
-		usage(stderr);
+		envelope_usage(stderr);
 		exit(EXIT_FAILURE);
 	default:
 		filenames = &(argv[optind]);

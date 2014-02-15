@@ -10,7 +10,6 @@
 
 static void parseargs(int argc, char *argv[]);
 static void openfiles(void);
-static void usage(FILE *out);
 static void parse(void);
 static void extract(void);
 
@@ -20,7 +19,7 @@ static FILE *outfile = NULL;
 static char *outfilename = NULL;
 static msg *m = NULL;
 
-void usage(FILE *out)
+void extract_usage(FILE *out)
 {
 	fprintf(out, "snakk extract [ <file> ] [ -o <output-file> ]\n");
 }
@@ -40,10 +39,10 @@ void parseargs(int argc, char *argv[])
 			outfilename = optarg;
 			break;
 		case 'h':
-			usage(stdout);
+			extract_usage(stdout);
 			exit(EXIT_SUCCESS);
 		case '?':
-			usage(stderr);
+			extract_usage(stderr);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -55,7 +54,7 @@ void parseargs(int argc, char *argv[])
 		filename = argv[optind];
 		break;
 	default:
-		usage(stderr);
+		extract_usage(stderr);
 		exit(EXIT_FAILURE);
 	}
 }

@@ -1,9 +1,18 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-int envelope_main(int argc, char *argv[]);
-int extract_main(int argc, char *argv[]);
-int header_main(int argc, char *argv[]);
-int field_main(int argc, char *argv[]);
+#include <stdio.h>
+
+int  envelope_main(int argc, char *argv[]);
+void envelope_usage(FILE *out);
+
+int  extract_main(int argc, char *argv[]);
+void extract_usage(FILE *out);
+
+int  header_main(int argc, char *argv[]);
+void header_usage(FILE *out);
+
+int  field_main(int argc, char *argv[]);
+void field_usage(FILE *out);
 
 #endif

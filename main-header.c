@@ -7,7 +7,6 @@
 #include <errno.h>
 #include <string.h>
 
-static void usage(FILE *out);
 static void parseargs(int argc, char *argv[]);
 static FILE *openfile_w(const char *filename);
 static FILE *openfile_r(const char *filename);
@@ -30,7 +29,7 @@ header *hd = NULL;
 char *verbatim = NULL;
 size_t verbatimlen = 0;
 
-void usage(FILE *out)
+void header_usage(FILE *out)
 {
 	fprintf(out, "usage: snakk header [ <file> ]\n"
 	             "	[ -o <output-file> ]\n"
@@ -50,7 +49,7 @@ void parseargs(int argc, char *argv[])
 	while((c = getopt_long(argc, argv, "ho:", longopts, NULL)) != -1)
 	switch(c) {
 	case 'h':
-		usage(stdout);
+		header_usage(stdout);
 		exit(EXIT_SUCCESS);
 	case 'o':
 		outfilename = optarg;
@@ -67,7 +66,7 @@ void parseargs(int argc, char *argv[])
 		fprintf(stderr, "Unrecognized format '%s'.\n", optarg);
 		exit(EXIT_FAILURE);
 	case '?':
-		usage(stderr);
+		header_usage(stderr);
 		exit(EXIT_FAILURE);
 	}
 
