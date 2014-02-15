@@ -2,9 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
-#include "main-extract.h"
-#include "main-envelope.h"
-#include "main-header.h"
+#include "main.h"
 
 static void parseargs(int argc, char *argv[]);
 static void usage(FILE *out);
@@ -23,6 +21,7 @@ static struct command commands[] = {
 	{ "extract", extract_main },
 	{ "envelope", envelope_main },
 	{ "header", header_main },
+	{ "field", field_main },
 };
 
 void usage(FILE *out)
