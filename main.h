@@ -3,6 +3,9 @@
 
 #include <stdio.h>
 
+void die(const char *fmt, ...);
+void die_errno(const char *fmt, ...);
+
 int  envelope_main(int argc, char *argv[]);
 void envelope_usage(FILE *out);
 

@@ -1,7 +1,9 @@
 #include <stdlib.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
+#include <errno.h>
 #include "main.h"
 
 static void parseargs(int argc, char *argv[]);
@@ -26,6 +28,35 @@ static struct command commands[] = {
 	{ "header", header_main, header_usage },
 	{ "field", field_main, field_usage },
 };
+
+void die(const char *fmt, ...)
+{
+	char msg[4096];
+	va_list ap;
+
+	va_start(ap, fmt);
+	vsnprintf(msg, sizeof(msg), fmt, ap);
+	fprintf(stderr, "%s\n", msg);
+	va_end(ap);
+	exit(EXIT_FAILURE);
+}
+
+void die_errno(const char *fmt, ...)
+{
+	char msg[4096];
+	char *pmsg;
+	size_t pmsglen;
+	va_list ap;
+
+	va_start(ap, fmt);
+	pmsg = msg;
+	pmsglen = sizeof(msg);
+	pmsg += sizeof(msg) - (pmsglen -= vsnprintf(msg, sizeof(msg), fmt, ap));
+	snprintf(pmsg, pmsglen, ": %s", strerror(errno));
+	fprintf(stderr, "%s\n", msg);
+	va_end(ap);
+	exit(EXIT_FAILURE);
+}
 
 void usage(FILE *out)
 {
