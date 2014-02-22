@@ -7,6 +7,14 @@ void buffer_init(buffer *b)
 	memset(b, 0, sizeof(buffer));
 }
 
+void buffer_putc(buffer *b, int c)
+{
+	char ci;
+
+	ci = (char)c;
+	buffer_write(&ci, 1, 1, b);
+}
+
 void buffer_writer(buffer *b, writer *w)
 {
 	writer_init(w, (void *)b, (writefn)buffer_write);
@@ -48,4 +56,9 @@ unsigned char *buffer_get_n(buffer *b, size_t *rlen)
 {
 	*rlen = b->len;
 	return b->chunk;
+}
+
+size_t buffer_len(buffer *b)
+{
+	return b->len;
 }

@@ -63,19 +63,15 @@ void openfiles(void)
 {
 	if(filename != NULL) {
 		file = fopen(filename, "rb");
-		if(file == NULL) {
-			fprintf(stderr, "Failed to open file '%s':\n\t%s.\n", filename, strerror(errno));
-			exit(EXIT_FAILURE);
-		}
+		if(file == NULL)
+			die_errno("Failed to open file '%s'", filename);
 	} else
 		file = stdin;
 
 	if(outfilename != NULL) {
 		outfile = fopen(outfilename, "w");
-		if(outfile == NULL) {
-			fprintf(stderr, "Failed to open file '%s':\n\t%s.\n", outfilename, strerror(errno));
-			exit(EXIT_FAILURE);
-		}
+		if(outfile == NULL)
+			die_errno("Failed to open file '%s'", outfilename);
 	} else
 		outfile = stdout;
 }
@@ -86,10 +82,8 @@ void parse(void)
 
 	parser_init(&p, (parser_readfn)fread, (void *)file);
 	m = parse_msg(&p);
-	if(m == NULL) {
-		fprintf(stderr, "Failed to parse message: %s.\n", p.errmsg);
-		exit(EXIT_FAILURE);
-	}
+	if(m == NULL)
+		die("Failed to parse message: %s", p.errmsg);
 }
 
 void extract(void)

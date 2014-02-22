@@ -63,8 +63,7 @@ void parseargs(int argc, char *argv[])
 			format = format_unfolded;
 			break;
 		}
-		fprintf(stderr, "Unrecognized format '%s'.\n", optarg);
-		exit(EXIT_FAILURE);
+		die("Unrecognized format '%s'", optarg);
 	case '?':
 		header_usage(stderr);
 		exit(EXIT_FAILURE);
@@ -84,10 +83,8 @@ FILE *openfile_w(const char *filename)
 {
 	FILE *file;
 	file = fopen(filename, "w");
-	if(file == NULL) {
-		fprintf(stderr, "Failed to open file '%s': %s.\n", filename, strerror(errno));
-		exit(EXIT_FAILURE);
-	}
+	if(file == NULL)
+		die_errno("Failed to open file '%s'", filename);
 	return file;
 }
 
@@ -95,10 +92,8 @@ FILE *openfile_r(const char *filename)
 {
 	FILE *file;
 	file = fopen(filename, "rb");
-	if(file == NULL) {
-		fprintf(stderr, "Failed to open file '%s': %s.\n", filename, strerror(errno));
-		exit(EXIT_FAILURE);
-	}
+	if(file == NULL)
+		die_errno("Failed to open file '%s'", filename);
 	return file;
 }
 
@@ -125,10 +120,8 @@ void parse(void)
 	if(nfiles == 0) {
 		parser_init(&p, (parser_readfn)fread, (void *)stdin);
 		hd = parse_header(&p);
-		if(hd == NULL) {
-			fprintf(stderr, "Failed to parse file: %s.\n", p.errmsg);
-			exit(EXIT_FAILURE);
-		}
+		if(hd == NULL)
+			die("Failed to parse file: %s", p.errmsg);
 
 		verbatim = xcpy(&p, 0, xget(&p));
 		verbatimlen = xget(&p);
@@ -138,10 +131,8 @@ void parse(void)
 		file = openfile_r(filenames[i]);
 		parser_init(&p, (parser_readfn)fread, (void *)file);
 		hd = parse_header(&p);
-		if(hd == NULL) {
-			fprintf(stderr, "Failed to parse file: %s.\n", p.errmsg);
-			exit(EXIT_FAILURE);
-		}
+		if(hd == NULL)
+			die("Failed to parse file: %s", p.errmsg);
 
 		verbatim = xcpy(&p, 0, xget(&p));
 		verbatimlen = xget(&p);

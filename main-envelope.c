@@ -28,9 +28,9 @@ void envelope_usage(FILE *out)
 {
 	fprintf(out,
 	"snakk envelope <file1> <file2> ...\n"
-	"	[ -o | --output= <file> ]\n"
+	"	[ -o | --output=<file> ]\n"
 	"\n"
-	"Envelopes file1 in file2, then file3 and so on.");
+	"Envelopes file1 in file2, then file3 and so on.\n");
 }
 
 void parseargs(int argc, char *argv[])
@@ -61,8 +61,7 @@ void parseargs(int argc, char *argv[])
 			format = format_unfolded;
 			break;
 		}
-		fprintf(stderr, "Unrecognized format '%s'.\n", optarg);
-		exit(EXIT_FAILURE);
+		die("Unrecognized format '%s'", optarg);
 	default:
 		envelope_usage(stderr);
 		exit(EXIT_FAILURE);
@@ -83,10 +82,8 @@ void openoutput(void)
 {
 	if(outfilename != NULL) {
 		outfile = fopen(outfilename, "w");
-		if(outfile == NULL) {
-			fprintf(stderr, "Failed to open file '%s': %s.\n", outfilename, strerror(errno));
-			exit(EXIT_FAILURE);
-		}
+		if(outfile == NULL)
+			die_errno("Failed to open file '%s'", outfilename);
 	} else
 		outfile = stdout;
 }
@@ -100,25 +97,20 @@ void parse(void)
 	header *hd;
 
 	file = fopen(filenames[0], "rb");
-	if(file == NULL) {
-		fprintf(stderr, "Failed to open file '%s': %s.\n", filenames[i], strerror(errno));
-		exit(EXIT_FAILURE);
-	}
+	if(file == NULL)
+		die_errno("Failed to open file '%s'", outfilename);
+
 	parser_init(&p, (parser_readfn)fread, (void *)file);
 	m = parse_msg(&p);
-	if(m == NULL) {
-		fprintf(stderr, "Failed to parse first file.\n");
-		exit(EXIT_FAILURE);
-	}
+	if(m == NULL)
+		die("Failed to parse file '%s'", filenames[0]);
 
 	hd = msg_get_header(m);
 
 	for(i = 1; i < nfilenames; i++) {
 		file = fopen(filenames[i], "rb");
-		if(file == NULL) {
-			fprintf(stderr, "Failed to open file '%s': %s.\n", filenames[i], strerror(errno));
-			exit(EXIT_FAILURE);
-		}
+		if(file == NULL)
+			die_errno("Failed to open file '%s'", filenames[i]);
 		parser_init(&p, (parser_readfn)fread, (void *)file);
 		j = 0;
 		while((fld = parse_field(&p)) != NULL) {

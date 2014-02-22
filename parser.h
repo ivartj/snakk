@@ -29,19 +29,6 @@ void xset(parser *x, size_t off);
 void xadd(parser *x, void *data, size_t len);
 char *xcpy(parser *x, size_t start, size_t stop);
 
-typedef struct _buffer buffer;
-
-struct _buffer {
-	char *buf;
-	size_t buflen, bufcap;
-};
-
-void binit(buffer *x);
-void bputc(buffer *x, int c);
-char *bget(buffer *x);
-size_t blen(buffer *x);
-void bfree(buffer *x);
-
 static char *parse_full_n(parser *x, size_t *rlen);
 static int parse_linespace(parser *x);
 static int parse_text(parser *x, const char *text);

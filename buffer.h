@@ -18,6 +18,7 @@ void buffer_reset(buffer *b);
 size_t buffer_write(const char *chunk, size_t len, size_t num, buffer *b);
 
 unsigned char *buffer_get(buffer *b);
+size_t buffer_len(buffer *b);
 unsigned char *buffer_get_n(buffer *b, size_t *rlen);
 
 #endif

@@ -37,8 +37,9 @@ void field_usage(FILE *out)
 	fprintf(out, "snakk field\n"
 	             "	 -f <field-name> ...\n"
 	             "	 -a <field-name> ...\n"
-	             "	 -o <output-file> ...\n"
-	             "	 -p <place-holder> ...\n"
+	             "	 -o <output-file>\n"
+	             "	 -d <delimiter>\n"
+	             "	 -p <placeholder>\n"
 	             "        <filename> ...\n");
 }
 
@@ -113,10 +114,8 @@ void openoutput(void)
 		outfile = stdout;
 	else {
 		outfile = fopen(outfilename, "w");
-		if(outfile == NULL) {
-			fprintf(stderr, "Failed to open '%s': %s.\n", outfilename, strerror(errno));
-			exit(EXIT_FAILURE);
-		}
+		if(outfile == NULL) 
+			die_errno("Failed to open '%s'", outfilename);
 	}
 }
 
@@ -125,10 +124,8 @@ void openfile(parser *p, const char *filename)
 	FILE *in;
 
 	in = fopen(filename, "rb");
-	if(in == NULL) {
-		fprintf(stderr, "Failed to open file '%s': %s.\n", filename, strerror(errno));
-		exit(EXIT_FAILURE);
-	}
+	if(in == NULL)
+		die_errno("Failed to open '%s'", filename);
 
 	parser_init(p, (parser_readfn)fread, (void *)in);
 }

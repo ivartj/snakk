@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "buffer.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -99,46 +100,6 @@ char *xcpy(parser *x, size_t start, size_t stop)
 	cpy = calloc(1, len + 1);
 	memcpy(cpy, x->src + start, len);
 	return cpy;
-}
-
-void binit(buffer *x)
-{
-	memset(x, 0, sizeof(buffer));
-	x->buf = calloc(1, 256);
-	x->bufcap = 256;
-}
-
-void bputc(buffer *x, int c)
-{
-	size_t oldcap;
-
-	if(x->buflen + 1 >= x->bufcap) {
-		oldcap = x->bufcap; 
-		if(x->bufcap == 0)
-			x->bufcap = 256;
-		else
-			x->bufcap *= 2;
-		x->buf = realloc(x->buf, x->bufcap);
-		memset(x->buf + oldcap, 0, x->bufcap - oldcap);
-	}
-	x->buf[x->buflen++] = (unsigned char)c;
-}
-
-char *bget(buffer *x)
-{
-	return x->buf;
-}
-
-size_t blen(buffer *x)
-{
-	return x->buflen;
-}
-
-void bfree(buffer *x)
-{
-	if(x->buf != NULL)
-		free(x->buf);
-	memset(x, 0, sizeof(buffer));
 }
 
 char *parse_full_n(parser *x, size_t *rlen)
@@ -267,7 +228,7 @@ abort:
 
 static int parse_field_name(parser *x, char **rname, size_t *rnamelen);
 static int parse_field_colon(parser *x);
-static int parse_field_content(parser *x, size_t *pstart, size_t *pstop);
+static int parse_field_value(parser *x, char **rvalue, size_t *rlen);
 
 field *parse_field(parser *x)
 {
@@ -326,7 +287,7 @@ int parse_field_name(parser *x, char **rname, size_t *rnamelen)
 
 	start = xget(x);
 	state = st_init;
-	binit(&b);
+	buffer_init(&b);
 
 	while((c = xgetc(x)) != EOF)
 	switch(state) {
@@ -337,7 +298,7 @@ int parse_field_name(parser *x, char **rname, size_t *rnamelen)
 				c = toupper(c);
 				capital = 0;
 			}
-			bputc(&b, c);
+			buffer_putc(&b, c);
 			break;
 		}
 		xerr(x, "Unexpected character '%c' at start of field name", c);
@@ -349,7 +310,7 @@ int parse_field_name(parser *x, char **rname, size_t *rnamelen)
 				capital = 0;
 			} else
 				capital = 1;
-			bputc(&b, c);
+			buffer_putc(&b, c);
 			break;
 		}
 
@@ -357,12 +318,11 @@ int parse_field_name(parser *x, char **rname, size_t *rnamelen)
 		goto ret;
 	}
 abort:
-	bfree(&b);
+	buffer_reset(&b);
 	xset(x, start);
 	return 0;
 ret:
-	*rname = b.buf;
-	*rnamelen = b.buflen;
+	*rname = buffer_get_n(&b, rnamelen);
 	return 1;
 }
 
@@ -383,7 +343,7 @@ int parse_field_value(parser *x, char **rvalue, size_t *rlen)
 
 	start = xget(x);
 	state = st_start;
-	binit(&b);
+	buffer_init(&b);
 
 	while((c = xgetc(x)) != EOF)
 	switch(state) {
@@ -393,7 +353,7 @@ int parse_field_value(parser *x, char **rvalue, size_t *rlen)
 			break;
 
 		if(S_CHAR(c)) {
-			bputc(&b, c);
+			buffer_putc(&b, c);
 			state = st_value;
 			break;
 		}
@@ -442,9 +402,9 @@ int parse_field_value(parser *x, char **rvalue, size_t *rlen)
 			break;
 
 		if(S_CHAR(c)) {
-			if(blen(&b) != 0)
-				bputc(&b, ' ');
-			bputc(&b, c);
+			if(buffer_len(&b) != 0)
+				buffer_putc(&b, ' ');
+			buffer_putc(&b, c);
 			state = st_value;
 			break;
 		}
@@ -473,7 +433,7 @@ int parse_field_value(parser *x, char **rvalue, size_t *rlen)
 	case st_value:
 
 		if(S_CHAR(c) || LWS(c)) {
-			bputc(&b, c);
+			buffer_putc(&b, c);
 			break;
 		}
 
@@ -492,12 +452,11 @@ int parse_field_value(parser *x, char **rvalue, size_t *rlen)
 		goto abort;
 	}
 abort:
-	bfree(&b);
+	buffer_reset(&b);
 	xset(x, start);
 	return 0;
 ret:
-	*rvalue = bget(&b);
-	*rlen = blen(&b);
+	*rvalue = buffer_get_n(&b, rlen);
 	return 1;
 }
 
